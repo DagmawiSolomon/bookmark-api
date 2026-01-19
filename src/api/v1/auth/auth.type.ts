@@ -1,6 +1,6 @@
-type OAuthProvider = 'google';
+export type OAuthProvider = 'google';
 
-enum AuthRequestType {
+export enum AuthRequestType {
   MAGIC_LINK = 'magic_link',
   OAUTH = 'oauth'
 }
@@ -8,3 +8,8 @@ enum AuthRequestType {
 export type AuthRequest =
   | { email: string; type: AuthRequestType.MAGIC_LINK}
   | { provider: OAuthProvider; token: string; type: AuthRequestType.OAUTH };
+
+export interface AuthResponse {
+  token: string;
+  expiresIn: number;
+}
