@@ -1,9 +1,5 @@
-import { Router } from "express";
+import { authControllers } from "./auth.controller";
+import authRouter from "./auth.route";
+import { authServices } from "./auth.service"
 
-
-
-export const AuthModule = (): Router =>{
-    const router = Router()
-
-    return router
-}
+export { authControllers, authRouter, authServices };
