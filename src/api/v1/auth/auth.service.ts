@@ -1,4 +1,4 @@
-import { AuthRequest, AuthResponse } from "./auth.type";
+import { AuthRequest,AuthResponse } from "./auth.schema"
 
 const authWithMagicLink = async(req: AuthRequest):  Promise<AuthResponse>=>{
     return {"token":"123", expiresIn:200}
