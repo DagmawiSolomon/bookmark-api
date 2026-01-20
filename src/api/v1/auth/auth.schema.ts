@@ -1,4 +1,4 @@
-import {email, z} from "zod";
+import {z} from "zod";
 
 export enum AuthRequestType {
   MAGIC_LINK = 'magic_link',
@@ -22,4 +22,10 @@ export const authRequestSchema = z.discriminatedUnion("type",[
     oauthSchema
 ])
 
-export type AuthRequestInput = z.infer<typeof authRequestSchema>
+export const authResponseSchema = z.object({
+    token: z.string(), // TODO: update to jwt
+    expiresIn: z.number().int().nonnegative(),
+})
+
+export type AuthResponse = z.infer<typeof authResponseSchema>
+export type AuthRequest = z.infer<typeof authRequestSchema>
