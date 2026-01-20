@@ -1,17 +1,30 @@
 import { Request, Response } from "express"
-import { AuthRequest, AuthRequestType, AuthResponse } from "./auth.type"
 import { authServices } from "./auth.service"
+import { AuthRequest, authRequestSchema, AuthRequestType, AuthResponse } from "./auth.schema"
 
 export  const authControllers = async (req: Request<{},AuthResponse, AuthRequest>, res:Response) =>{
     try{
-        const body: AuthRequest = req.body
+        const parsed = authRequestSchema.safeParse(req.body)
+       
+
+        if (!parsed.success) {
+            return res.status(400).json({
+                error: "Invalid request body",
+                details: parsed.error.issues.map(issue => ({
+    field: issue.path.join("."),
+    message: issue.message,
+  }))
+            });
+        }
+
+         const body = parsed.data
 
         
         if (body.type === AuthRequestType.MAGIC_LINK){
-            res.json(await authServices.authWithMagicLink(body))
+            return res.json(await authServices.authWithMagicLink(body))
         }
         else if(body.type === AuthRequestType.OAUTH){
-            res.json(await authServices.authWithOAuth(body))
+            return res.json(await authServices.authWithOAuth(body))
         }
         else {
             return res.status(400).json({ error: "Invalid auth request type" });
