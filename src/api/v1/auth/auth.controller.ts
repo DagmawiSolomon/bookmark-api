@@ -11,9 +11,9 @@ export  const authControllers = async (req: Request<{},AuthResponse, AuthRequest
             return res.status(400).json({
                 error: "Invalid request body",
                 details: parsed.error.issues.map(issue => ({
-    field: issue.path.join("."),
-    message: issue.message,
-  }))
+                field: issue.path.join("."),
+                message: issue.message,
+            }))
             });
         }
 
