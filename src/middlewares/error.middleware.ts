@@ -7,13 +7,15 @@ export const errorMiddleware = (err:Error, req:Request, res:Response, next:NextF
     if(err instanceof ZodError){
         const mapped = mapZodError(err)
         return res.status(mapped.statusCode).json({
-            error: err.message
+            error: mapped.message,
+             details: mapped.details
         })
     }
 
     if(err instanceof AppError){
         return res.status(err.statusCode).json({
-            error: err.message
+            error: err.message,
+           
         })
     }
 
