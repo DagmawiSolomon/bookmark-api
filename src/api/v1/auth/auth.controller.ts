@@ -3,7 +3,7 @@ import { authServices } from "./auth.service"
 import { AuthRequest, authRequestSchema, AuthRequestType, AuthResponse } from "./auth.schema"
 import { BadRequestError } from "../../../errors/http-error"
 
-export  const authControllers = async (req: Request<{},AuthResponse, AuthRequest>, res:Response, next: NextFunction) =>{
+const userAuthController = async (req: Request<{},AuthResponse, AuthRequest>, res:Response, next: NextFunction) =>{
     try{
         const parsed = authRequestSchema.parse(req.body)
        
@@ -24,3 +24,7 @@ export  const authControllers = async (req: Request<{},AuthResponse, AuthRequest
     }
 
 }
+
+const validateMagicLink = async (req: Request<{},AuthResponse, Request>, res:Response, next: NextFunction) =>{}
+
+export const  authControllers = {userAuthController, validateMagicLink}
