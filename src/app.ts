@@ -5,7 +5,7 @@ import { errorMiddleware } from "./middlewares/error.middleware";
 const app = express();
 app.use(express.json());
 
-v1Routers.forEach(router => app.use("/api/v1", router));
+v1Routers.forEach(r => app.use(`/api/v1${r.basePath}`, r.router));
 
 app.use(errorMiddleware)
 
