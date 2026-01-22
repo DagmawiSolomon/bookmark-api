@@ -23,8 +23,7 @@ export const authRequestSchema = z.discriminatedUnion("type",[
 ])
 
 export const authResponseSchema = z.object({
-    token: z.string(), // TODO: update to jwt
-    expiresIn: z.number().int().nonnegative(),
+    token: z.jwt(), 
 })
 
 export type AuthResponse = z.infer<typeof authResponseSchema>
