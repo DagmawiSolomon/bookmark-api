@@ -7,6 +7,7 @@ import { BadRequestError, InternalServerError, UnauthorizedError } from "../../.
 import { Request, Response } from "express";
 import { sendMagicLink } from "../../../utilis/sendMagicLink";
 import { RefreshToken } from "../../../models/refreshToken.model";
+import { reidsClient } from "../../../config/redis";
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 
@@ -19,14 +20,18 @@ const authWithMagicLink = async (body: AuthRequest) => {
   const token = generateRandomToken();
   const tokenHash = hashToken(token);
 
+  
   try {
-    await MagicLink.create({
-      email,
-      tokenHash,
-      expiresAt: new Date(Date.now() + MAGIC_LINK_TTL_MS),
-    });
-
-    await sendMagicLink(email, token);
+    const result = await reidsClient.set(tokenHash,email,{
+      EX: MAGIC_LINK_TTL_MS,
+      NX: true
+    })
+    if(result === 'OK'){
+      await sendMagicLink(email, token);
+    }
+    else{
+      throw new InternalServerError("Failed to create magic link")
+    }
   } catch(err) {
     console.log(err)
     throw new InternalServerError("Failed to create magic link");
@@ -37,22 +42,27 @@ const authWithMagicLink = async (body: AuthRequest) => {
 const verifyMagicLink = async(token: string)=>{
     const tokenHash = hashToken(token);
 
-    const record = await MagicLink.findOne({
-    tokenHash,
-    usedAt: null,
-    expiresAt: { $gt: new Date() },
-  });
+  //   const record = await MagicLink.findOne({
+  //   tokenHash,
+  //   usedAt: null,
+  //   expiresAt: { $gt: new Date() },
+  // });
 
-  if (!record) {
+  const email = await reidsClient.get(tokenHash)
+
+  if (!email) {
     throw new BadRequestError("Magic link is invalid or expired");
   }
 
-  record.usedAt = new Date();
-  await record.save();
+  await reidsClient.del(tokenHash);
 
-  const user =
-    (await User.findOne({ email: record.email })) ??
-    (await User.create({ email: record.email }));
+
+  const user = await User.findOneAndUpdate(
+  { email },                      
+  { $setOnInsert: { email } },    
+  { new: true, upsert: true }    
+);
+
 
   const accessToken = generateAccessToken(user._id.toString())
   const refreshToken = generateRefreshToken(user._id.toString())
