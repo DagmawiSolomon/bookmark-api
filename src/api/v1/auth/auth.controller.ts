@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from "express"
-import { authServices } from "./auth.service"
-import { AuthRequest, authRequestSchema, AuthRequestType, AuthResponse } from "./auth.schema"
+import { authServices } from "./auth.module"
+import { AuthRequest, authRequestSchema, AuthRequestType, AuthResponse, magicLinkQuerySchema } from "./auth.schema"
 import { BadRequestError } from "../../../errors/http-error"
+
+
+
 
 const userAuthController = async (req: Request<{},AuthResponse, AuthRequest>, res:Response, next: NextFunction) =>{
     try{
@@ -25,6 +28,18 @@ const userAuthController = async (req: Request<{},AuthResponse, AuthRequest>, re
 
 }
 
-const validateMagicLink = async (req: Request<{},AuthResponse, Request>, res:Response, next: NextFunction) =>{}
+const validateMagicLink = async (req: Request<{},Response, Request>, res:Response, next: NextFunction) =>{
+    try {
+    const parsed = magicLinkQuerySchema.parse(req.query);
+    const user = authServices.verifyMagicLink(parsed.token)
+    console.log(user)
+    
+    
+  } catch(err) {
+    next(err)
+  }
+
+
+}
 
 export const  authControllers = {userAuthController, validateMagicLink}
