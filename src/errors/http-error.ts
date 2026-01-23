@@ -23,3 +23,9 @@ export class NotFoundError extends AppError {
     super(message, 404);
   }
 }
+
+export class InternalServerError extends AppError{
+  constructor(message="Internal Server Error"){
+    super(message, 500)
+  }
+}
