@@ -5,12 +5,13 @@ import { generateRandomToken, hashToken } from "../../../utilis/crypto";
 import { MagicLink } from "../../../models/magicLink.model";
 import { BadRequestError, InternalServerError } from "../../../errors/http-error";
 import { Request, Response } from "express";
+import { sendMagicLink } from "../../../utilis/sendMagicLink";
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 const JWT_SECRET = process.env.JWT_SECRET || ''
 
 
-const authWithMagicLink = async(req: AuthRequest):  Promise<AuthResponse>=>{
+const authWithMagicLink = async(req: AuthRequest)=>{
     const email = req.type === AuthRequestType.MAGIC_LINK ? req.email : undefined
 
     const user = await User.findOne({email}) ?? await User.create({email})
@@ -23,11 +24,12 @@ const authWithMagicLink = async(req: AuthRequest):  Promise<AuthResponse>=>{
         tokenHash,
         expiresAt: new Date(Date.now() + MAGIC_LINK_TTL_MS),
     });
+     sendMagicLink(user.email, token)
     }catch(err){
        throw new InternalServerError("Failed to create magic link");
     }
 
-    return {token}
+   
 
 }
 
