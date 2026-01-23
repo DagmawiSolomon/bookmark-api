@@ -6,7 +6,7 @@ import { ModuleRouter } from "../../../shared/module-router";
 export const authRouter = new ModuleRouter('/auth')
 
 authRouter.post("/", authControllers.userAuthController);  
-authRouter.post("/magic/callback", authControllers.validateMagicLink)         
+authRouter.post("/magic/verify", authControllers.validateMagicLink)         
 // authRouter.get("/magic", authControllers.magicLink);      
 // authRouter.get("/oauth", authControllers.oauthInfo);      
 // authRouter.post("/oauth/:provider", authControllers.oauthLogin); 
