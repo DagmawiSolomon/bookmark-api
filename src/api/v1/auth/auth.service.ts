@@ -1,37 +1,38 @@
 
 import { User } from "../../../models/user.model"
-import { AuthRequest,AuthRequestType,AuthResponse } from "./auth.schema"
-import { generateRandomToken, hashToken } from "../../../utilis/crypto";
+import { AuthRequest,authRequestSchema,AuthRequestType,AuthResponse } from "./auth.schema"
+import { generateAccessToken, generateRandomToken, generateRefreshToken, hashToken, verifyRefreshToken } from "../../../utilis/token.utils";
 import { MagicLink } from "../../../models/magicLink.model";
-import { BadRequestError, InternalServerError } from "../../../errors/http-error";
+import { BadRequestError, InternalServerError, UnauthorizedError } from "../../../errors/http-error";
 import { Request, Response } from "express";
 import { sendMagicLink } from "../../../utilis/sendMagicLink";
+import { RefreshToken } from "../../../models/refreshToken.model";
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
-const JWT_SECRET = process.env.JWT_SECRET || ''
 
+const authWithMagicLink = async (body: AuthRequest) => {
 
-const authWithMagicLink = async(req: AuthRequest)=>{
-    const email = req.type === AuthRequestType.MAGIC_LINK ? req.email : undefined
+  const email = body.type === AuthRequestType.MAGIC_LINK ? body.email : undefined
+  
+  if (!email) return;
 
-    const user = await User.findOne({email}) ?? await User.create({email})
-    const token = generateRandomToken();
-    const tokenHash = hashToken(token);
+  const token = generateRandomToken();
+  const tokenHash = hashToken(token);
 
-    try{
-        await MagicLink.create({
-        userId: user._id,
-        tokenHash,
-        expiresAt: new Date(Date.now() + MAGIC_LINK_TTL_MS),
+  try {
+    await MagicLink.create({
+      email,
+      tokenHash,
+      expiresAt: new Date(Date.now() + MAGIC_LINK_TTL_MS),
     });
-     sendMagicLink(user.email, token)
-    }catch(err){
-       throw new InternalServerError("Failed to create magic link");
-    }
 
-   
+    await sendMagicLink(email, token);
+  } catch(err) {
+    console.log(err)
+    throw new InternalServerError("Failed to create magic link");
+  }
+};
 
-}
 
 const verifyMagicLink = async(token: string)=>{
     const tokenHash = hashToken(token);
@@ -49,8 +50,43 @@ const verifyMagicLink = async(token: string)=>{
   record.usedAt = new Date();
   await record.save();
 
-  return { userId: record.userId.toString() };
+  const user =
+    (await User.findOne({ email: record.email })) ??
+    (await User.create({ email: record.email }));
 
+  const accessToken = generateAccessToken(user._id.toString())
+  const refreshToken = generateRefreshToken(user._id.toString())
+
+  await RefreshToken.create({
+    userId: user._id,
+    tokenHash: hashToken(refreshToken),
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  });
+
+  return {
+    user,
+    accessToken,
+    refreshToken,
+  };
+
+}
+
+
+const refreshAccessToken  = async (refreshToken: string) => {
+  const payload = verifyRefreshToken(refreshToken)
+  const tokenHash = hashToken(refreshToken)
+
+  const stored = await RefreshToken.findOne({
+    userId: payload.sub,
+    tokenHash,
+    expiresAt: { $gt: new Date() },
+  });
+
+  if (!stored) {
+    throw new UnauthorizedError("Invalid refresh token");
+  }
+
+  return generateAccessToken(payload.sub);
 
 }
 
