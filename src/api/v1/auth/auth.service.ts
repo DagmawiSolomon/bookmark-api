@@ -1,7 +1,6 @@
 
 import { User } from "../../../models/user.model"
-import jwt from 'jsonwebtoken';
-import { AuthRequest,AuthRequestType,AuthResponse, magicLinkQuerySchema } from "./auth.schema"
+import { AuthRequest,AuthRequestType,AuthResponse } from "./auth.schema"
 import { generateRandomToken, hashToken } from "../../../utilis/crypto";
 import { MagicLink } from "../../../models/magicLink.model";
 import { BadRequestError, InternalServerError } from "../../../errors/http-error";
@@ -32,9 +31,7 @@ const authWithMagicLink = async(req: AuthRequest):  Promise<AuthResponse>=>{
 
 }
 
-const verifyMagicLink = async(req:Request, res: Response)=>{
-    const { token } = magicLinkQuerySchema.parse(req.query);
-
+const verifyMagicLink = async(token: string)=>{
     const tokenHash = hashToken(token);
 
     const record = await MagicLink.findOne({
@@ -59,4 +56,4 @@ const authWithOAuth = async(req:AuthRequest): Promise<AuthResponse>=>{
      return {"token":"123"}
 }
 
-export const authServices = {authWithMagicLink, authWithOAuth}
+export const authServices = {authWithMagicLink, authWithOAuth, verifyMagicLink}
