@@ -9,8 +9,9 @@ import { BadRequestError } from "../../../errors/http-error"
 const userAuthController = async (req: Request<{},AuthResponse, AuthRequest>, res:Response, next: NextFunction) =>{
     try{
         const parsed = authRequestSchema.parse(req.body)
+
+        console.log(parsed)
        
-        
         if (parsed.type === AuthRequestType.MAGIC_LINK){
             return res.json(await authServices.authWithMagicLink(parsed))
         }
@@ -30,11 +31,19 @@ const userAuthController = async (req: Request<{},AuthResponse, AuthRequest>, re
 
 const validateMagicLink = async (req: Request<{},Response, Request>, res:Response, next: NextFunction) =>{
     try {
-    const parsed = magicLinkQuerySchema.parse(req.query);
-    const user = authServices.verifyMagicLink(parsed.token)
-    console.log(user)
-    
-    
+    const body = magicLinkQuerySchema.parse(req.body);
+    const {user, accessToken, refreshToken} = await authServices.verifyMagicLink(body.token)
+    return res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 30 * 24 * 60 * 60 * 1000,})
+    .json({
+    accessToken,
+    user,
+  });
+
+
   } catch(err) {
     next(err)
   }
