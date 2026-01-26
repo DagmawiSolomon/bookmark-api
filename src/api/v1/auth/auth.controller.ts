@@ -2,53 +2,85 @@ import { NextFunction, Request, Response } from "express"
 import { authServices } from "./auth.module"
 import { AuthRequest, authRequestSchema, AuthRequestType, AuthResponse, magicLinkQuerySchema } from "./auth.schema"
 import { BadRequestError } from "../../../errors/http-error"
+import passport from "passport"
 
 
 
 
-const userAuthController = async (req: Request<{},AuthResponse, AuthRequest>, res:Response, next: NextFunction) =>{
-    try{
+const userAuthController = async (req: Request<{}, AuthResponse, AuthRequest>, res: Response, next: NextFunction) => {
+    try {
         const parsed = authRequestSchema.parse(req.body)
 
         console.log(parsed)
-       
-        if (parsed.type === AuthRequestType.MAGIC_LINK){
+
+        if (parsed.type === AuthRequestType.MAGIC_LINK) {
             return res.json(await authServices.authWithMagicLink(parsed))
         }
-        else if(parsed.type === AuthRequestType.OAUTH){
+        else if (parsed.type === AuthRequestType.OAUTH) {
             return res.json(await authServices.authWithOAuth(parsed))
         }
         else {
             throw new BadRequestError("Unsupported auth type");
         }
-        
+
     }
-    catch(err){
+    catch (err) {
         next(err);
     }
 
 }
 
-const validateMagicLink = async (req: Request<{},Response, Request>, res:Response, next: NextFunction) =>{
+const validateMagicLink = async (req: Request<{}, Response, Request>, res: Response, next: NextFunction) => {
     try {
-    const body = magicLinkQuerySchema.parse(req.body);
-    const {user, accessToken, refreshToken} = await authServices.verifyMagicLink(body.token)
-    return res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 30 * 24 * 60 * 60 * 1000,})
-    .json({
-    accessToken,
-    user,
-  });
+        const body = magicLinkQuerySchema.parse(req.body);
+        const { user, accessToken, refreshToken } = await authServices.verifyMagicLink(body.token)
+        return res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+        })
+            .json({
+                accessToken,
+                user,
+            });
 
 
-  } catch(err) {
-    next(err)
-  }
+    } catch (err) {
+        next(err)
+    }
 
 
 }
 
-export const  authControllers = {userAuthController, validateMagicLink}
+const googleAuth = (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate("google", { scope: ["profile", "email"], session: false })(req, res, next);
+}
+
+const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate("google", { session: false }, async (err: any, user: any) => {
+        if (err || !user) {
+            return next(err || new BadRequestError("Authentication failed"));
+        }
+
+        try {
+            const { accessToken, refreshToken, user: authUser } = await authServices.authWithOAuth(user);
+
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+            });
+
+            return res.json({
+                accessToken,
+                user: authUser,
+            });
+        } catch (error) {
+            next(error);
+        }
+    })(req, res, next);
+}
+
+export const authControllers = { userAuthController, validateMagicLink, googleAuth, googleAuthCallback }

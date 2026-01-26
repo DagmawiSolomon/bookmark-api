@@ -1,8 +1,7 @@
 
 import { User } from "../../../models/user.model"
-import { AuthRequest,authRequestSchema,AuthRequestType,AuthResponse } from "./auth.schema"
+import { AuthRequest, authRequestSchema, AuthRequestType, AuthResponse } from "./auth.schema"
 import { generateAccessToken, generateRandomToken, generateRefreshToken, hashToken, verifyRefreshToken } from "../../../utilis/token.utils";
-import { MagicLink } from "../../../models/magicLink.model";
 import { BadRequestError, InternalServerError, UnauthorizedError } from "../../../errors/http-error";
 import { Request, Response } from "express";
 import { sendMagicLink } from "../../../utilis/sendMagicLink";
@@ -14,56 +13,32 @@ const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 const authWithMagicLink = async (body: AuthRequest) => {
 
   const email = body.type === AuthRequestType.MAGIC_LINK ? body.email : undefined
-  
+
   if (!email) return;
 
   const token = generateRandomToken();
   const tokenHash = hashToken(token);
 
-  
+
   try {
-    const result = await reidsClient.set(tokenHash,email,{
+    const result = await reidsClient.set(tokenHash, email, {
       EX: MAGIC_LINK_TTL_MS,
       NX: true
     })
-    if(result === 'OK'){
+    if (result === 'OK') {
       await sendMagicLink(email, token);
     }
-    else{
+    else {
       throw new InternalServerError("Failed to create magic link")
     }
-  } catch(err) {
+  } catch (err) {
     console.log(err)
     throw new InternalServerError("Failed to create magic link");
   }
 };
 
 
-const verifyMagicLink = async(token: string)=>{
-    const tokenHash = hashToken(token);
-
-  //   const record = await MagicLink.findOne({
-  //   tokenHash,
-  //   usedAt: null,
-  //   expiresAt: { $gt: new Date() },
-  // });
-
-  const email = await reidsClient.get(tokenHash)
-
-  if (!email) {
-    throw new BadRequestError("Magic link is invalid or expired");
-  }
-
-  await reidsClient.del(tokenHash);
-
-
-  const user = await User.findOneAndUpdate(
-  { email },                      
-  { $setOnInsert: { email } },    
-  { new: true, upsert: true }    
-);
-
-
+const createAuthResponse = async (user: any) => {
   const accessToken = generateAccessToken(user._id.toString())
   const refreshToken = generateRefreshToken(user._id.toString())
 
@@ -78,11 +53,33 @@ const verifyMagicLink = async(token: string)=>{
     accessToken,
     refreshToken,
   };
+}
+
+
+const verifyMagicLink = async (token: string) => {
+  const tokenHash = hashToken(token);
+
+  const email = await reidsClient.get(tokenHash)
+
+  if (!email) {
+    throw new BadRequestError("Magic link is invalid or expired");
+  }
+
+  await reidsClient.del(tokenHash);
+
+
+  const user = await User.findOneAndUpdate(
+    { email },
+    { $setOnInsert: { email } },
+    { new: true, upsert: true }
+  );
+
+  return createAuthResponse(user);
 
 }
 
 
-const refreshAccessToken  = async (refreshToken: string) => {
+const refreshAccessToken = async (refreshToken: string) => {
   const payload = verifyRefreshToken(refreshToken)
   const tokenHash = hashToken(refreshToken)
 
@@ -100,8 +97,13 @@ const refreshAccessToken  = async (refreshToken: string) => {
 
 }
 
-const authWithOAuth = async(req:AuthRequest): Promise<AuthResponse>=>{
-     return {"token":"123"}
+const authWithOAuth = async (user: any) => {
+  const { accessToken, refreshToken, user: authUser } = await createAuthResponse(user);
+  return {
+    accessToken,
+    refreshToken,
+    user: authUser
+  }
 }
 
-export const authServices = {authWithMagicLink, authWithOAuth, verifyMagicLink}
+export const authServices = { authWithMagicLink, authWithOAuth, verifyMagicLink }
