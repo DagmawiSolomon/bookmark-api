@@ -36,7 +36,7 @@ const validateMagicLink = async (req: Request<{}, Response, Request>, res: Respo
         const { user, accessToken, refreshToken } = await authServices.verifyMagicLink(body.token)
         return res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: true,
+            secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
             maxAge: 30 * 24 * 60 * 60 * 1000,
         })
