@@ -13,5 +13,5 @@ authRouter.get("/google/callback", authControllers.googleAuthCallback);
 // authRouter.get("/magic", authControllers.magicLink);
 // authRouter.get("/oauth", authControllers.oauthInfo);
 // authRouter.post("/oauth/:provider", authControllers.oauthLogin);
-// authRouter.post("/refresh", authControllers.refresh);
+authRouter.post("/refresh", authControllers.refreshTokenController);
 // authRouter.post("/logout", authControllers.logout);
