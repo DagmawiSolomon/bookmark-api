@@ -3,6 +3,7 @@ import { authServices } from "./auth.module"
 import { AuthRequest, authRequestSchema, AuthRequestType, AuthResponse, magicLinkQuerySchema } from "./auth.schema"
 import { BadRequestError } from "../../../errors/http-error"
 import passport from "passport"
+import { refreshAccessToken } from "./auth.service"
 
 
 
@@ -83,4 +84,27 @@ const googleAuthCallback = async (req: Request, res: Response, next: NextFunctio
     })(req, res, next);
 }
 
-export const authControllers = { userAuthController, validateMagicLink, googleAuth, googleAuthCallback }
+export const refreshTokenController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+
+
+    if (!refreshToken) {
+        throw new BadRequestError("Refresh token is required")
+    }
+
+    const accessToken = await refreshAccessToken(refreshToken);
+
+    return res.status(200).json({
+      accessToken,
+    });
+  } catch (error) {
+    next(error); // 
+};
+}
+
+export const authControllers = { userAuthController, validateMagicLink, googleAuth, googleAuthCallback, refreshTokenController}
