@@ -78,7 +78,7 @@ const verifyMagicLink = async (token: string) => {
 }
 
 
-const refreshAccessToken = async (refreshToken: string) => {
+export const refreshAccessToken = async (refreshToken: string) => {
   const payload = verifyRefreshToken(refreshToken)
   const tokenHash = hashToken(refreshToken)
 
