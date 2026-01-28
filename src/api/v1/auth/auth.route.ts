@@ -1,4 +1,3 @@
-import { Router } from "express";
 import { authControllers } from "./auth.controller";
 import { ModuleRouter } from "../../../shared/module-router";
 
