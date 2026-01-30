@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express"
 import { Bookmark } from "../../../models/bookmark.model"
 import { bookmarkServices } from "./bookmarks.service"
-import { CursorPaginationSchema, listBookmarkSchema } from "./bookmarks.schema"
+import { CursorPaginationSchema } from "./bookmarks.schema"
 import { UnauthorizedError } from "../../../errors/http-error";
 
 const getBookmarks = async (
