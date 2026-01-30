@@ -1,5 +1,7 @@
 import crypto from "crypto";
 import jwt from 'jsonwebtoken';
+import { RefreshToken } from "../models/refreshToken.model";
+import { AppError } from "../errors/app-error";
 
 export const generateRandomToken = () =>
   crypto.randomBytes(32).toString("hex");
@@ -23,10 +25,13 @@ export const generateRefreshToken = (userId: string) =>
     { expiresIn: "30d" }
   );
 
-export const verifyRefreshToken = (refreshToken: string) =>
-  jwt.verify(
-    refreshToken,
-    process.env.REFRESH_TOKEN_SECRET!
-  ) as { sub: string };
+type TokenType = "access" | "refresh";
 
+const TOKEN_SECRETS: Record<TokenType, string> = {
+  access: process.env.ACCESS_TOKEN_SECRET!,
+  refresh: process.env.REFRESH_TOKEN_SECRET!
 
+}
+export const verifyToken = (token:string, type: TokenType) => {
+   return jwt.verify(token, TOKEN_SECRETS[type]) as {sub: string};
+}
