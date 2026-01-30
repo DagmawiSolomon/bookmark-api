@@ -21,10 +21,4 @@ const authMiddleware = (req: Request, res: Response, next:NextFunction) => {
         }
         next()
 
-        // error hndling: I have an eroor middleware
-        // what's req,user
-        // do I have to check the user ID in the mongodb db here or access it from the requws,id from the controllers
-        // what's preventing malicious actors from seeing the userid being transported as plain tezt
-       
-
 }
