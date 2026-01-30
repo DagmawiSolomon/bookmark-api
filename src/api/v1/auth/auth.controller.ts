@@ -11,9 +11,6 @@ import { refreshAccessToken } from "./auth.service"
 const userAuthController = async (req: Request<{}, AuthResponse, AuthRequest>, res: Response, next: NextFunction) => {
     try {
         const parsed = authRequestSchema.parse(req.body)
-
-        console.log(parsed)
-
         if (parsed.type === AuthRequestType.MAGIC_LINK) {
             return res.json(await authServices.authWithMagicLink(parsed))
         }
@@ -50,8 +47,6 @@ const validateMagicLink = async (req: Request<{}, Response, Request>, res: Respo
     } catch (err) {
         next(err)
     }
-
-
 }
 
 const googleAuth = (req: Request, res: Response, next: NextFunction) => {
