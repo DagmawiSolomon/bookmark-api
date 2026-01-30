@@ -1,7 +1,7 @@
 
 import { User } from "../../../models/user.model"
 import { AuthRequest, AuthRequestType } from "./auth.schema"
-import { generateAccessToken, generateRandomToken, generateRefreshToken, hashToken, verifyRefreshToken } from "../../../utilis/token.utils";
+import { generateAccessToken, generateRandomToken, generateRefreshToken, hashToken, verifyToken } from "../../../utilis/token.utils";
 import { BadRequestError, InternalServerError, UnauthorizedError } from "../../../errors/http-error";
 import { sendMagicLink } from "../../../utilis/sendMagicLink";
 import { RefreshToken } from "../../../models/refreshToken.model";
@@ -79,7 +79,7 @@ const verifyMagicLink = async (token: string) => {
 
 
 export const refreshAccessToken = async (refreshToken: string) => {
-  const payload = verifyRefreshToken(refreshToken)
+  const payload = verifyToken(refreshToken, 'refresh')
   const tokenHash = hashToken(refreshToken)
 
   const stored = await RefreshToken.findOne({
