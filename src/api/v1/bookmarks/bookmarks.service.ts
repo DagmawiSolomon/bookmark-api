@@ -1,14 +1,13 @@
 import { InternalServerError } from "../../../errors/http-error"
 import { Bookmark } from "../../../models/bookmark.model";
-import { ListBookmarksInput } from "./bookmarks.schema"
 
-const listBookmarks = async (input: ListBookmarksInput) => {
+const listBookmarks = async (userId: string, limit: number, cursor:string | undefined) => {
     try{
-        const query = input.lastId
-  ? { _id: { $gt: input.lastId } }
+        const query = cursor
+  ? { _id: { $gt: cursor } }
   : {};
 
-        const bookmark = await Bookmark.find(query).sort({_id:1}).limit(input.limit)
+        const bookmark = await Bookmark.find(query).sort({_id:1}).limit(limit)
         return bookmark
     }
     catch(err){
