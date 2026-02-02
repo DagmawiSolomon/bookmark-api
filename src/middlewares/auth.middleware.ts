@@ -2,7 +2,7 @@ import { NextFunction, Request } from "express";
 import { UnauthorizedError } from "../errors/http-error";
 import { verifyToken } from "../utilis/token.utils";
 
-const authMiddleware = (req: Request, res: Response, next:NextFunction) => {
+export const authMiddleware = (req: Request, res: Response, next:NextFunction) => {
 
         const authHeader = req.headers.authorization
         if(!authHeader){
