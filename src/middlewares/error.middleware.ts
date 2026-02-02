@@ -3,7 +3,7 @@ import { ZodError } from "zod";
 import { mapZodError } from "../errors/zod-error";
 import { AppError } from "../errors/app-error";
 
-export const errorMiddleware = (err:Error, req:Request, res:Response, next:NextFunction)=>{
+export const errorMiddleware = (err:Error,res:Response)=>{
     if(err instanceof ZodError){
         const mapped = mapZodError(err)
         return res.status(mapped.statusCode).json({
