@@ -49,12 +49,10 @@ const createBookmark = async (req: Request, res: Response, next: NextFunction) =
       throw new UnauthorizedError("Unauthenticated")
     }
 
-    const body = BookmarkSchema.safeParse(req.body)
-    if (body.success) {
-      const bookmark = await bookmarkServices.createBookmark(body.data)
-      res.status(201).json(bookmark)
-    }
-
+    const user = req.user as { id: string };
+    const body = BookmarkSchema.parse(req.body)
+    const bookmark = await bookmarkServices.createBookmark(body, user.id)
+    res.status(201).json(bookmark)
 
   }
   catch (err) {
@@ -71,11 +69,10 @@ const updateBookmark = async (req: Request, res: Response, next: NextFunction) =
     if (typeof id !== 'string') {
       throw new Error("Invalid ID")
     }
-    const body = BookmarkSchema.safeParse(req.body)
-    if (body.success) {
-      const bookmark = await bookmarkServices.updateBookmark(body.data, id)
-      res.status(200).json(bookmark)
-    }
+    const user = req.user as { id: string };
+    const body = BookmarkSchema.parse(req.body)
+    const bookmark = await bookmarkServices.updateBookmark(body, id, user.id)
+    res.status(200).json(bookmark)
 
 
   }
