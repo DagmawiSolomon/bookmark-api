@@ -12,9 +12,10 @@ const getBookmarks = async (
     if (!req.user) {
       throw new UnauthorizedError("Unauthenticated");
     }
-    const {limit, cursor} = CursorPaginationSchema.parse(req.params)
+    const user = req.user as { id: string };
+    const { limit, cursor } = CursorPaginationSchema.parse(req.params)
 
-    const bookmarks = await bookmarkServices.listBookmarks(req.user.id, limit, cursor);
+    const bookmarks = await bookmarkServices.listBookmarks(user.id, limit, cursor);
     return res.json(bookmarks).status(200);
   } catch (err) {
     next(err);
@@ -24,71 +25,81 @@ const getBookmarks = async (
 
 
 const getBookmarksById = async (req: Request, res: Response, next: NextFunction) => {
-  try{
-    if(!req.user){
+  try {
+    if (!req.user) {
       throw new UnauthorizedError("Unauthenticated")
     }
-    const {id} = req.params
+    const { id } = req.params
+    if (typeof id !== 'string') {
+      throw new Error("Invalid ID")
+    }
+    const user = req.user as { id: string };
 
-    const bookmark = await bookmarkServices.getBookmarkById(req.user.id, id[0])
-    reuturn res.json(bookmark).status(200);
+    const bookmark = await bookmarkServices.getBookmarkById(user.id, id)
+    return res.json(bookmark).status(200);
   }
-  catch(err){
+  catch (err) {
     next(err)
   }
 }
 
 const createBookmark = async (req: Request, res: Response, next: NextFunction) => {
-  try{
-    if(!req.user){
-       throw new UnauthorizedError("Unauthenticated")
+  try {
+    if (!req.user) {
+      throw new UnauthorizedError("Unauthenticated")
     }
 
     const body = BookmarkSchema.safeParse(req.body)
-    if(body){
-    const bookmark = await bookmarkServices.createBookmark(body.data)
-    return res.json(bookmark).status(200)
+    if (body.success) {
+      const bookmark = await bookmarkServices.createBookmark(body.data)
+      res.status(201).json(bookmark)
     }
-  
+
 
   }
-  catch(err){
+  catch (err) {
     next(err)
   }
 }
 
-const updateBookmark = (req: Request, res: Response, next: NextFunction) => {
-try{
-    if(!req.user){
-       throw new UnauthorizedError("Unauthenticated")
+const updateBookmark = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new UnauthorizedError("Unauthenticated")
     }
-    const {id} = req.params
+    const { id } = req.params
+    if (typeof id !== 'string') {
+      throw new Error("Invalid ID")
+    }
     const body = BookmarkSchema.safeParse(req.body)
-    if(body){
-    const bookmark = await bookmarkServices.updateBookmark(body.data, id)
-    return res.json(bookmark).status(201)
+    if (body.success) {
+      const bookmark = await bookmarkServices.updateBookmark(body.data, id)
+      res.status(200).json(bookmark)
     }
-  
+
 
   }
-  catch(err){
+  catch (err) {
     next(err)
   }
 }
 
-const deleteBookmark = (req: Request, res: Response, next: NextFunction) => {
-  try{
-    if(!req.user){
-       throw new UnauthorizedError("Unauthenticated")
+const deleteBookmark = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new UnauthorizedError("Unauthenticated")
     }
-    const {id} = req.params
+    const { id } = req.params
+    if (typeof id !== 'string') {
+      throw new Error("Invalid ID")
+    }
     const bookmark = await bookmarkServices.deleteBookmark(id)
-    return res.json(bookmark).status(200)
+    res.status(200).json(bookmark)
   }
-  catch(err){
+  catch (err) {
     next(err)
   }
 }
 
 
-export const bookmarksControllers = {getBookmarks, getBookmarksById, createBookmark, updateBookmark, deleteBookmark}
+export const bookmarksControllers = { getBookmarks, getBookmarksById, createBookmark, updateBookmark, deleteBookmark }
