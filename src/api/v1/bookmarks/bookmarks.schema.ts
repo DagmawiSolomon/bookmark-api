@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
 import z from "zod";
 
+const ObjectIdSchema = z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId");
+
 export const BookmarkSchema = z.object({
-    user: z.string(),
     title: z.string(),
     description: z.string(),
     url: z.string().url(),
-    collection: z.string(),
-    tags: z.array(z.string()),
-    isFavourite: z.boolean()
+    collection: ObjectIdSchema,
+    tags: z.array(ObjectIdSchema),
+    isFavorite: z.boolean().default(false)
 })
 
 export const CursorPaginationSchema = z.object({
