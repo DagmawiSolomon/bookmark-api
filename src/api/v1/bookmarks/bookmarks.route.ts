@@ -1,7 +1,7 @@
 import { ModuleRouter } from "../../../shared/module-router";
 import { bookmarksControllers } from "./bookmarks.controller";
 
-export const bookmarksRouter = new ModuleRouter("bookmarks/")
+export const bookmarksRouter = new ModuleRouter("/bookmarks")
 
 bookmarksRouter.get("/", bookmarksControllers.getBookmarks)
 bookmarksRouter.post("/", bookmarksControllers.createBookmark)
