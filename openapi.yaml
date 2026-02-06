@@ -1,0 +1,494 @@
+openapi: 3.0.3
+info:
+  title: BookmarkPro API
+  description: >
+    The BookmarkPro API provides endpoints for managing bookmarks, collections, and tags.
+    It powers the BookmarkPro web app, enabling users to organize, search, and favorite saved links.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+
+paths:
+  # ==========================================================
+  # Bookmarks
+  # ==========================================================
+  /bookmarks:
+    get:
+      summary: Get all bookmarks
+      operationId: getBookmarks
+      tags:
+        - Bookmarks
+      responses:
+        '200':
+          description: A list of bookmarks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bookmark'
+
+    post:
+      summary: Create a new bookmark
+      operationId: createBookmark
+      tags:
+        - Bookmarks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookmarkInput'
+      responses:
+        '201':
+          description: Bookmark created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /bookmarks/{id}:
+    get:
+      summary: Get a specific bookmark
+      tags:
+        - Bookmarks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bookmark found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bookmark'
+        '404':
+          description: Bookmark not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Update an existing bookmark
+      operationId: updateBookmark
+      tags:
+        - Bookmarks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookmarkInput'
+      responses:
+        '200':
+          description: Bookmark updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkResponse'
+        '404':
+          description: Bookmark not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a bookmark
+      operationId: deleteBookmark
+      tags:
+        - Bookmarks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bookmark deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Bookmark deleted successfully
+                  id:
+                    type: integer
+        '404':
+          description: Bookmark not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================================
+  # Collections
+  # ==========================================================
+  /collections:
+    get:
+      summary: Get all collections
+      operationId: getCollections
+      tags:
+        - Collections
+      responses:
+        '200':
+          description: A list of collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Collection'
+
+    post:
+      summary: Create a new collection
+      operationId: createCollection
+      tags:
+        - Collections
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionInput'
+      responses:
+        '201':
+          description: Collection created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /collections/{id}:
+    get:
+      summary: Get a specific collection
+      operationId: getCollectionById
+      tags:
+        - Collections
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Collection found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Update a collection
+      operationId: updateCollection
+      tags:
+        - Collections
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionInput'
+      responses:
+        '200':
+          description: Collection updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionResponse'
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a collection
+      operationId: deleteCollection
+      tags:
+        - Collections
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Collection deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Collection deleted successfully
+                  id:
+                    type: integer
+        '404':
+          description: Collection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ==========================================================
+  # Tags
+  # ==========================================================
+  /tags:
+    get:
+      summary: Get all tags
+      operationId: getTags
+      tags:
+        - Tags
+      responses:
+        '200':
+          description: A list of tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+
+    post:
+      summary: Create a new tag
+      operationId: createTag
+      tags:
+        - Tags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagInput'
+      responses:
+        '201':
+          description: Tag created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tags/{id}:
+    delete:
+      summary: Delete a tag
+      operationId: deleteTag
+      tags:
+        - Tags
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tag deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Tag deleted successfully
+                  id:
+                    type: integer
+        '404':
+          description: Tag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# ==========================================================
+# COMPONENTS
+# ==========================================================
+components:
+  schemas:
+    Bookmark:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "MDN Web Docs"
+        url:
+          type: string
+          format: uri
+          example: "https://developer.mozilla.org"
+        description:
+          type: string
+          example: "Web technology documentation."
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["reference", "web"]
+        collection:
+          type: string
+          example: "Development"
+        favorite:
+          type: boolean
+          example: true
+        date:
+          type: string
+          example: "10/10/2025"
+
+    BookmarkInput:
+      type: object
+      required:
+        - title
+        - url
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        collection:
+          type: string
+        favorite:
+          type: boolean
+        date:
+          type: string
+
+    BookmarkResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Bookmark created successfully
+        bookmark:
+          $ref: '#/components/schemas/Bookmark'
+
+    Collection:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Work Resources"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-10T10:00:00Z"
+
+    CollectionInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Work Resources"
+
+    CollectionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Collection created successfully
+        collection:
+          $ref: '#/components/schemas/Collection'
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "AI"
+
+    TagInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "AI"
+
+    TagResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Tag created successfully
+        tag:
+          $ref: '#/components/schemas/Tag'
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Resource not found."
+
+tags:
+  - name: Bookmarks
+    description: Manage user bookmarks (create, edit, delete, list)
+  - name: Collections
+    description: Manage bookmark collections (folders)
+  - name: Tags
+    description: Manage tags for bookmarks
