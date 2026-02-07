@@ -13,7 +13,7 @@ const getBookmarks = async (
       throw new UnauthorizedError("Unauthenticated");
     }
     const user = req.user as { id: string };
-    const { limit, cursor } = CursorPaginationSchema.parse(req.params)
+    const { limit, cursor } = CursorPaginationSchema.parse(req.query)
 
     const bookmarks = await bookmarkServices.listBookmarks(user.id, limit, cursor);
     return res.json(bookmarks).status(200);
