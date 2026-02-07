@@ -19,7 +19,7 @@ const listBookmarks = async (userId: string, limit: number, cursor: string | und
 
 const getBookmarkById = async (userId: string, bookmarkId: string) => {
     try {
-        const bookmark = await Bookmark.find({ user: userId, id: bookmarkId })
+        const bookmark = await Bookmark.find({ user: userId, _id: bookmarkId })
         return bookmark
     }
     catch (err) {
