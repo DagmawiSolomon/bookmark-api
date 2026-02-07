@@ -42,7 +42,7 @@ const createBookmark = async (input: BookmarkInput, userId: string) => {
 
 const updateBookmark = async (input: BookmarkInput, id: string, userId: string) => {
     try {
-        const bookmark = await Bookmark.updateOne({ _id: id, user: userId }, input)
+        const bookmark = await Bookmark.findOneAndUpdate({ _id: id, user: userId }, input)
         return bookmark
     }
     catch (err) {
