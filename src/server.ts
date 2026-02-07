@@ -3,14 +3,14 @@ dotenv.config();
 
 import app from './app';
 import { connectDB } from './config/mongodb';
-import { reidsClient } from './config/redis';
+import { redisClient } from './config/redis';
 
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
     await connectDB();
-    await reidsClient.connect();
+    await redisClient.connect();
     console.log('Redis connected');
 
     app.listen(PORT, () => {
