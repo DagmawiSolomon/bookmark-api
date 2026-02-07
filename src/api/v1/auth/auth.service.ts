@@ -1,9 +1,9 @@
 
 import { User } from "../../../models/user.model"
 import { AuthRequest, AuthRequestType } from "./auth.schema"
-import { generateAccessToken, generateRandomToken, generateRefreshToken, hashToken, verifyToken } from "../../../utilis/token.utils";
+import { generateAccessToken, generateRandomToken, generateRefreshToken, hashToken, verifyToken } from "../../../utils/token.utils";
 import { BadRequestError, InternalServerError, UnauthorizedError } from "../../../errors/http-error";
-import { sendMagicLink } from "../../../utilis/sendMagicLink";
+import { sendMagicLink } from "../../../utils/sendMagicLink";
 import { RefreshToken } from "../../../models/refreshToken.model";
 import { reidsClient } from "../../../config/redis";
 
