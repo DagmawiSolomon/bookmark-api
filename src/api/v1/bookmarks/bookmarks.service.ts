@@ -51,9 +51,9 @@ const updateBookmark = async (input: BookmarkInput, id: string, userId: string) 
     }
 }
 
-const deleteBookmark = async (id: string) => {
+const deleteBookmark = async (id: string, userId: string) => {
     try {
-        const bookmark = await Bookmark.findOneAndDelete({ id })
+        const bookmark = await Bookmark.findOneAndDelete({ _id: id, user: userId })
         return bookmark
     }
     catch (err) {

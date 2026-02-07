@@ -90,7 +90,8 @@ const deleteBookmark = async (req: Request, res: Response, next: NextFunction) =
     if (typeof id !== 'string') {
       throw new Error("Invalid ID")
     }
-    const bookmark = await bookmarkServices.deleteBookmark(id)
+    const user = req.user as { id: string };
+    const bookmark = await bookmarkServices.deleteBookmark(id, user.id)
     res.status(200).json(bookmark)
   }
   catch (err) {
