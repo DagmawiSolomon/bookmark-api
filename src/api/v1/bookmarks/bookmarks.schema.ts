@@ -13,7 +13,7 @@ export const BookmarkSchema = z.object({
 })
 
 export const CursorPaginationSchema = z.object({
-    limit: z.number().int().min(1).max(50).default(5),
+    limit: z.coerce.number().int().min(1).max(50).default(5),
     cursor: z.string().optional()
 })
 
