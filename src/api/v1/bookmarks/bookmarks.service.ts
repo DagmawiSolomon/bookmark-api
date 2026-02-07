@@ -32,16 +32,17 @@ const getBookmarkById = async (userId: string, bookmarkId: string) => {
 const createBookmark = async (input: BookmarkInput, userId: string) => {
     try {
 
-        const collection = await Collection.findOne({ _id: input.collection, userID: userId });
+        // Validate collection ownership
+        const collection = await Collection.findOne({ _id: input.collection, user: userId });
         if (!collection) {
             throw new NotFoundError("Collection not found or access denied");
         }
 
-
+        // Validate tags existence and ownership
         if (input.tags && input.tags.length > 0) {
-            const validTags = await Tag.find({ _id: { $in: input.tags } });
+            const validTags = await Tag.find({ _id: { $in: input.tags }, user: userId });
             if (validTags.length !== input.tags.length) {
-                throw new NotFoundError("One or more tags not found");
+                throw new NotFoundError("One or more tags not found or access denied");
             }
         }
 
@@ -59,19 +60,19 @@ const createBookmark = async (input: BookmarkInput, userId: string) => {
 
 const updateBookmark = async (input: BookmarkInput, id: string, userId: string) => {
     try {
-
+        // Validate collection ownership if provided
         if (input.collection) {
-            const collection = await Collection.findOne({ _id: input.collection, userID: userId });
+            const collection = await Collection.findOne({ _id: input.collection, user: userId });
             if (!collection) {
                 throw new NotFoundError("Collection not found or access denied");
             }
         }
 
-
+        // Validate tags existence and ownership if provided
         if (input.tags && input.tags.length > 0) {
-            const validTags = await Tag.find({ _id: { $in: input.tags } });
+            const validTags = await Tag.find({ _id: { $in: input.tags }, user: userId });
             if (validTags.length !== input.tags.length) {
-                throw new NotFoundError("One or more tags not found");
+                throw new NotFoundError("One or more tags not found or access denied");
             }
         }
 
