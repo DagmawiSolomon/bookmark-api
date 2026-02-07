@@ -1,5 +1,7 @@
-import { InternalServerError } from "../../../errors/http-error"
+import { InternalServerError, NotFoundError } from "../../../errors/http-error"
 import { Bookmark } from "../../../models/bookmark.model";
+import { Collection } from "../../../models/collection.model";
+import { Tag } from "../../../models/tag.model";
 import { BookmarkInput, BookmarkSchema } from "./bookmarks.schema";
 
 const listBookmarks = async (userId: string, limit: number, cursor: string | undefined) => {
@@ -29,10 +31,25 @@ const getBookmarkById = async (userId: string, bookmarkId: string) => {
 }
 const createBookmark = async (input: BookmarkInput, userId: string) => {
     try {
+
+        const collection = await Collection.findOne({ _id: input.collection, userID: userId });
+        if (!collection) {
+            throw new NotFoundError("Collection not found or access denied");
+        }
+
+
+        if (input.tags && input.tags.length > 0) {
+            const validTags = await Tag.find({ _id: { $in: input.tags } });
+            if (validTags.length !== input.tags.length) {
+                throw new NotFoundError("One or more tags not found");
+            }
+        }
+
         const bookmark = await Bookmark.create({ ...input, user: userId })
         return bookmark
     }
     catch (err) {
+        if (err instanceof NotFoundError) throw err;
         console.log(err)
         throw new InternalServerError("Failed to create bookmark")
     }
@@ -42,10 +59,27 @@ const createBookmark = async (input: BookmarkInput, userId: string) => {
 
 const updateBookmark = async (input: BookmarkInput, id: string, userId: string) => {
     try {
-        const bookmark = await Bookmark.findOneAndUpdate({ _id: id, user: userId }, input)
+
+        if (input.collection) {
+            const collection = await Collection.findOne({ _id: input.collection, userID: userId });
+            if (!collection) {
+                throw new NotFoundError("Collection not found or access denied");
+            }
+        }
+
+
+        if (input.tags && input.tags.length > 0) {
+            const validTags = await Tag.find({ _id: { $in: input.tags } });
+            if (validTags.length !== input.tags.length) {
+                throw new NotFoundError("One or more tags not found");
+            }
+        }
+
+        const bookmark = await Bookmark.findOneAndUpdate({ _id: id, user: userId }, input, { new: true })
         return bookmark
     }
     catch (err) {
+        if (err instanceof NotFoundError) throw err;
         console.log(err)
         throw new InternalServerError("Failed to update bookmark")
     }
