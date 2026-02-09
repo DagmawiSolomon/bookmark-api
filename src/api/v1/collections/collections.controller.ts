@@ -1,4 +1,4 @@
-import { NextFunction, Request } from "express";
+import { NextFunction, Request, Response } from "express";
 import { UnauthorizedError } from "../../../errors/http-error";
 import { CursorPaginationSchema } from "../bookmarks/bookmarks.schema";
 import { collectionServices } from "./collections.service";
@@ -82,7 +82,7 @@ const deleteCollection = async(req: Request, res: Response, next: NextFunction) 
             throw new Error("Invalid ID")
         }
         const user = req.user as { id: string };
-        const colletion = await collectionServices.deleteCollection(id, user.id)
+        const collection = await collectionServices.deleteCollection(id, user.id)
         res.status(200).json(collection)
     }
     catch(err){
