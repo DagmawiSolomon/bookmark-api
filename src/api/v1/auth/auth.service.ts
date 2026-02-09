@@ -5,7 +5,7 @@ import { generateAccessToken, generateRandomToken, generateRefreshToken, hashTok
 import { BadRequestError, InternalServerError, UnauthorizedError } from "../../../errors/http-error";
 import { sendMagicLink } from "../../../utils/sendMagicLink";
 import { RefreshToken } from "../../../models/refreshToken.model";
-import { reidsClient } from "../../../config/redis";
+import { redisClient } from "../../../config/redis";
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 
@@ -20,7 +20,7 @@ const authWithMagicLink = async (body: AuthRequest) => {
 
 
   try {
-    const result = await reidsClient.set(tokenHash, email, {
+    const result = await redisClient.set(tokenHash, email, {
       EX: MAGIC_LINK_TTL_MS,
       NX: true
     })
@@ -58,13 +58,13 @@ const createAuthResponse = async (user: any) => {
 const verifyMagicLink = async (token: string) => {
   const tokenHash = hashToken(token);
 
-  const email = await reidsClient.get(tokenHash)
+  const email = await redisClient.get(tokenHash)
 
   if (!email) {
     throw new BadRequestError("Magic link is invalid or expired");
   }
 
-  await reidsClient.del(tokenHash);
+  await redisClient.del(tokenHash);
 
 
   const user = await User.findOneAndUpdate(
