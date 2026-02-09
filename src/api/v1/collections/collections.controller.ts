@@ -25,8 +25,8 @@ const getCollectionById = async(req: Request, res: Response, next: NextFunction)
         throw new UnauthorizedError("Unauthenticated")
         }
         const {id} = req.params
-         if (!req.user) {
-            throw new UnauthorizedError("Unauthenticated")
+        if (typeof id !== 'string') {
+            throw new Error("Invalid ID")
         }
         const user = req.user as { id: string };
         const collection = await collectionServices.getCollectionById(user.id, id)
