@@ -2,7 +2,7 @@ import { InternalServerError, NotFoundError } from "../../../errors/http-error";
 import { Collection } from "../../../models/collection.model";
 import { CollectionInput } from "./collections.schema";
 
-const listCollections = async(userId: string, limit: number, cursor: number | undefined) => {
+const listCollections = async(userId: string, limit: number, cursor: string | undefined) => {
     try{
         const query = cursor ? {_id: {$gt: cursor}} : {};
         const collections = await Collection.find({user: userId, ...query}).sort({_id: 1}).limit(limit)
